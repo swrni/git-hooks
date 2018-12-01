@@ -1,0 +1,2 @@
+[MASTER]
+#pylint: max-line-length=100
