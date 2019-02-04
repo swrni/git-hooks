@@ -10,7 +10,6 @@ and aborts pushing if there are errors or warnings.
 
 import sys
 import time
-import argparse
 import subprocess
 
 SUCCESS = 0
@@ -22,7 +21,7 @@ class Error(Exception):
     def __init__(self, *args):
         """Init method."""
 
-        super().__init__(*args)
+        Exception.__init__(*args)
 
 class Process():
     """Process object."""
@@ -42,6 +41,7 @@ class Process():
 
         if isinstance(command, str):
             command = command.strip().split()
+
         self.command = command
         self.process = subprocess.Popen(self.command, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE, shell=False,
@@ -56,6 +56,9 @@ class Process():
             print(err, file=sys.stderr)
             self.process.kill()
             self.stdout, self.stderr = self.process.communicate()
+
+        self.stdout = self.stdout.rstrip("\n\r")
+        self.stderr = self.stderr.rstrip("\n\r")
         self.exitcode = self.process.returncode
 
     def run(self, command, timeout=5, verify=False):
@@ -89,6 +92,4 @@ class Process():
 
         stop_time = time.time() + timeout
         for process in processes:
-            timeout = stop_time - time.time()
-            print("timeout: %s" % timeout)
-            process.join(timeout=timeout)
+            process.join(timeout=max(stop_time - time.time(), 0))
