@@ -8,9 +8,6 @@ and aborts pushing if there are errors or warnings.
 """
 
 import sys
-import time
-import argparse
-
 from process import Process
 
 SUCCESS = 0
@@ -25,11 +22,12 @@ def get_files():
 
     # Get all the files that differ from 'remote'.
     stdout, _, _ = Process().run("git diff %s --name-only" % remote, verify=True)
-    files = [line for line in stdout.split("\n") if line]
+    if not stdout:
+        return []
 
     # Check which files are python files.
-    python_files = []	
-    for file in files:
+    python_files = []
+    for file in (line for line in stdout.split("\n") if line):
         if file.endswith(".py"):
             python_files.append(file)
         else:
@@ -48,38 +46,21 @@ def lint_files(files):
     commands = ("pylint --output-format=colorized --score=no --jobs=0 %s" %
                 file for file in files)
     processes = Process.run_many_async(commands)
-    Process.join_many(processes, timeout=5)
+    Process.join_many(processes, timeout=15)
 
     return processes
-    # success = any([process.exitcode != 0 for process in processes])
-    # stdouts = (process.stdout + process.stderr for process in processes)
-    # return success, stdouts
-    # # return any([process.exitcode != 0 for process in processes])
-
-def parse_arguments():
-    """Parse arguments."""
-
-    description = "kvak"
-    parser = argparse.ArgumentParser(description=description)
-    # parser.add_argument("-h", "--help")
-    parser.add_argument(dest="remote-name", action="store") #, required=True)
-    parser.add_argument(dest="remote-location", action="store") #, required=True)
-    parser.add_argument(dest="refs-to-update", nargs=argparse.REMAINDER) #, required=True)
-
-    return parser.parse_args(sys.argv[1:])
-
-print("loaded")
 
 def main():
     """Main entry point."""
 
-    print("parse: %s" % str(parse_arguments()))
     files = get_files()
-    # success, stdouts = lint_files(files)
     processes = lint_files(files)
+
     for process in processes:
-        print(process.stdout)
-        print(process.stderr, file=sys.stderr)
+        if process.stdout:
+            print(process.stdout)
+        if process.stderr:
+            print(process.stderr, file=sys.stderr)
 
     if any([process.exitcode == 0 for process in processes]):
         return SUCCESS
