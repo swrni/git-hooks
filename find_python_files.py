@@ -88,8 +88,8 @@ def main():
     if args.debug:
         print(args)
 
-    python_files = [file for file in iterate_files(args)
-                    if is_python_file(file)]
+    python_files = (file for file in iterate_files(args)
+                    if is_python_file(file))
 
     for path in python_files:
         if args.absolute_paths:
