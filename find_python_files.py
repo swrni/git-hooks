@@ -8,7 +8,7 @@ import os
 import sys
 import argparse
 
-OWN_NAME = "find_pylint_errors"
+OWN_NAME = "find_python_flies"
 
 class Error(Exception):
     """Custom exception for this module."""
@@ -34,17 +34,21 @@ def iterate_files(args):
             for entry in iterator:
                 if entry.name in args.filter:
                     if args.debug:
-                        print(" [skipping] %s" % directory_path)
+                        # print(" [skipping] %s" % directory_path)
+                        print(" [skipping] %s" % os.path.join(directory_path, entry.name))
                 elif entry.is_dir():
                     # Call 'find_files' recursively.
                     find_files(entry.path)
                 elif entry.is_file():
                     # Append file path to 'files'.
+                    # print("entry: '%s'" % os.path.relpath(entry.path))
+                    # files.append(os.path.relpath(entry.path))
                     files.append(entry.path)
                 elif args.debug:
-                    print(" [unrecognized] %s" % entry.path)
+                    print(" [unrecognized] %s" % os.path.join(directory_path, entry.name))
 
     find_files(directory)
+    # sys.exit(2)
     return files
 
 def is_python_file(path):
@@ -90,10 +94,14 @@ def main():
 
     python_files = (file for file in iterate_files(args)
                     if is_python_file(file))
+    # print(list(python_files))
+    # sys.exit(2)
 
     for path in python_files:
         if args.absolute_paths:
             path = os.path.abspath(path)
+        else:
+            path = os.path.relpath(path)
         print(path)
 
     return 0

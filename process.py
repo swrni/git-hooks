@@ -40,7 +40,8 @@ class Process():
         """Run 'command' asynchronously."""
 
         if isinstance(command, str):
-            command = command.strip().split()
+            import shlex
+            command = shlex.split(command)
 
         self.command = command
         self.process = subprocess.Popen(self.command, stdout=subprocess.PIPE,
