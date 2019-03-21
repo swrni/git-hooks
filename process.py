@@ -10,6 +10,7 @@ and aborts pushing if there are errors or warnings.
 
 import sys
 import time
+import shlex
 import subprocess
 
 SUCCESS = 0
@@ -39,11 +40,9 @@ class Process():
     def run_async(self, command):
         """Run 'command' asynchronously."""
 
-        if isinstance(command, str):
-            import shlex
-            command = shlex.split(command)
+        assert isinstance(command, str), "isinstance has to be 'str'"
 
-        self.command = command
+        self.command = shlex.split(command)
         self.process = subprocess.Popen(self.command, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE, shell=False,
                                         universal_newlines=True)
