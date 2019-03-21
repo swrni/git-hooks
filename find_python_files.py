@@ -24,9 +24,6 @@ def iterate_files(args):
     'args.filter' are skipped.
     """
 
-    files = []
-    directory = os.path.relpath(args.directory)
-
     def find_files(directory_path):
         """Find all the files in the directory and append them to 'files'."""
 
@@ -34,21 +31,17 @@ def iterate_files(args):
             for entry in iterator:
                 if entry.name in args.filter:
                     if args.debug:
-                        # print(" [skipping] %s" % directory_path)
-                        print(" [skipping] %s" % os.path.join(directory_path, entry.name))
+                        print(f" [skipping] {os.path.join(directory_path, entry.name)}")
                 elif entry.is_dir():
-                    # Call 'find_files' recursively.
                     find_files(entry.path)
                 elif entry.is_file():
-                    # Append file path to 'files'.
-                    # print("entry: '%s'" % os.path.relpath(entry.path))
-                    # files.append(os.path.relpath(entry.path))
                     files.append(entry.path)
                 elif args.debug:
-                    print(" [unrecognized] %s" % os.path.join(directory_path, entry.name))
+                    print(f" [unrecognized] {os.path.join(directory_path, entry.name)}")
 
+    files = []
+    directory = os.path.relpath(args.directory)
     find_files(directory)
-    # sys.exit(2)
     return files
 
 def is_python_file(path):
@@ -94,8 +87,6 @@ def main():
 
     python_files = (file for file in iterate_files(args)
                     if is_python_file(file))
-    # print(list(python_files))
-    # sys.exit(2)
 
     for path in python_files:
         if args.absolute_paths:
